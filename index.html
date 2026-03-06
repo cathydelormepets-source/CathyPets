@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1A7A6E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cathy Pets">
+<title>Cathy Pets — Dossier Opérationnel</title>
+<link rel="manifest" href="manifest.json">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: -apple-system, 'Segoe UI', Arial, sans-serif; background: #0D4A43; min-height: 100vh; overscroll-behavior: none; }
+  input, select, textarea, button { font-family: inherit; }
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: #1A7A6E; border-radius: 2px; }
+  .spin { animation: spin 1s linear infinite; display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .fade { animation: fadeIn 0.3s ease; }
+  .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid #e0eeec; display: flex; z-index: 100; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -4px 20px rgba(0,0,0,0.1); }
+  .tab-btn { flex: 1; padding: 10px 4px 8px; border: none; background: transparent; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .tab-btn .ico { font-size: 22px; transition: transform 0.2s; }
+  .tab-btn .lbl { font-size: 9px; font-weight: 700; letter-spacing: 0.04em; color: #9AABAA; transition: color 0.2s; }
+  .tab-btn.active .ico { transform: scale(1.15); }
+  .tab-btn.active .lbl { color: #1A7A6E; }
+  .page { padding: 12px 12px 90px; max-width: 600px; margin: 0 auto; }
+  .card { background: #fff; border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .card-title { font-size: 10px; font-weight: 800; color: #1A7A6E; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .inp-label { font-size: 10px; font-weight: 700; color: #6B7878; display: block; margin-bottom: 4px; letter-spacing: 0.05em; }
+  .inp { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1.5px solid #DDE9E7; font-size: 14px; color: #1C2B2A; outline: none; background: #FAFFFE; transition: border-color 0.2s; }
+  .inp:focus { border-color: #1A7A6E; background: #fff; }
+  .inp-wrap { margin-bottom: 10px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .btn { padding: 12px 20px; border-radius: 12px; border: none; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: opacity 0.2s, transform 0.1s; letter-spacing: 0.04em; }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-primary { background: #1A7A6E; color: #fff; }
+  .btn-gold { background: #D4A843; color: #1C2B2A; }
+  .btn-blue { background: #1E5FAD; color: #fff; }
+  .btn-purple { background: #7B2D8B; color: #fff; }
+  .btn-sm { padding: 8px 14px; font-size: 11px; border-radius: 9px; }
+  .btn-full { width: 100%; }
+  .btn-outline { background: transparent; border: 1.5px solid #1A7A6E; color: #1A7A6E; }
+  .pill { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 20px; font-size: 9px; font-weight: 700; }
+  .row { display: flex; align-items: center; justify-content: space-between; }
+  .ai-box { background: #E8F5F3; border-radius: 12px; padding: 14px; font-size: 13px; color: #1C2B2A; line-height: 1.8; white-space: pre-wrap; margin-top: 10px; }
+  .err-box { background: #FFF0F0; border-radius: 12px; padding: 14px; font-size: 13px; color: #C0392B; margin-top: 10px; }
+  .total-box { background: #1A7A6E; border-radius: 14px; padding: 16px; text-align: center; margin: 12px 0; }
+  .divider { height: 1px; background: #EEF5F4; margin: 12px 0; }
+  .checklist-item { display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-radius: 10px; cursor: pointer; transition: background 0.15s; margin-bottom: 4px; }
+  .checklist-item:active { background: #E8F5F3; }
+  .check-box { width: 22px; height: 22px; border-radius: 7px; border: 2px solid #C8DEDD; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
+  .check-box.done { background: #1A7A6E; border-color: #1A7A6E; }
+  .install-banner { background: linear-gradient(135deg, #D4A843, #c49030); border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+  select.inp { cursor: pointer; }
+  .badge { background: #E74C3C; color: #fff; border-radius: 20px; font-size: 9px; font-weight: 800; padding: 2px 6px; margin-left: 4px; }
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  DONNÉES ENTREPRISE
+// ═══════════════════════════════════════════════════════
+const CP = {
+  societe:   "Cathy Pets SAS",
+  gerante:   "Cathy DELORME",
+  siret:     "928 564 269",
+  rcs:       "R.C.S Soissons",
+  tva:       "FR65928564269",
+  rcp:       "Hiscox — HSXIN320028640M",
+  adresse:   "6 Chemin Du Lavoir",
+  cp_ville:  "02470 Neuilly-Saint-Front",
+  tel_taxi:  "07.81.30.41.10",
+  tel_garde: "07.83.43.63.06",
+  email:     "cathydelormepets@gmail.com",
+  site:      "cathypetsitter.com",
+  iban:      "FR__ ____ ____ ____ ____ ____",
+  bic:       "__________",
+};
+const TARIF_A = 0.90, TARIF_R = 0.85;
+
+// ═══════════════════════════════════════════════════════
+//  STATE GLOBAL
+// ═══════════════════════════════════════════════════════
+let state = {
+  tab: location.hash.replace("#","") || "matin",
+  checks: {},
+  ai: { briefing:"", rdv:"", emails:"", suggestion:"" },
+  loading: {},
+  devis: {
+    client:"", email:"", tel:"", typeClient:"particulier",
+    villeD:"", cpD:"", paysD:"France",
+    villeA:"", cpA:"", paysA:"France",
+    retour:"oui", villeR:"Neuilly-Saint-Front", cpR:"02470",
+    kmA:"", kmR:"", nbAnim:"2", typeAnim:"chat",
+    dateTransport:"", notes:""
+  },
+  factures: [],
+  quoteNum: genNum(),
+};
+
+function genNum() {
+  const d = new Date();
+  return `CP-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}-${String(Math.floor(Math.random()*900)+100)}`;
+}
+
+// ═══════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════
+const eur = v => `${parseFloat(v).toFixed(2)} €`;
+const todayFR = () => new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
+const todayISO = () => new Date().toISOString().split("T")[0];
+const validityDate = () => { const d=new Date(); d.setDate(d.getDate()+30); return d.toLocaleDateString("fr-FR"); };
+
+function calcDevis() {
+  const kmA = parseFloat(state.devis.kmA)||0;
+  const kmR = state.devis.retour==="oui" ? (parseFloat(state.devis.kmR)||kmA) : 0;
+  const allerTTC  = +(kmA*TARIF_A).toFixed(2);
+  const retourTTC = +(kmR*TARIF_R).toFixed(2);
+  const totalTTC  = +(allerTTC+retourTTC).toFixed(2);
+  const totalHT   = +(totalTTC/1.20).toFixed(2);
+  const tvaMnt    = +(totalTTC-totalHT).toFixed(2);
+  const acompte   = +(totalTTC*0.5).toFixed(2);
+  return { kmA, kmR, allerTTC, retourTTC, totalTTC, totalHT, tvaMnt, acompte, solde: acompte };
+}
+
+// ═══════════════════════════════════════════════════════
+//  API CLAUDE
+// ═══════════════════════════════════════════════════════
+async function callClaude(prompt, mcp=false) {
+  const body = {
+    model:"claude-sonnet-4-20250514", max_tokens:800,
+    messages:[{role:"user",content:prompt}]
+  };
+  if (mcp) body.mcp_servers = [
+    {type:"url",url:"https://gmail.mcp.claude.com/mcp",name:"gmail"},
+    {type:"url",url:"https://gcal.mcp.claude.com/mcp",name:"gcal"}
+  ];
+  const r = await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)
+  });
+  const d = await r.json();
+  return (d.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n");
+}
+
+// ═══════════════════════════════════════════════════════
+//  GÉNÉRATION PDF DEVIS
+// ═══════════════════════════════════════════════════════
+function genPDF(type="devis") {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:"portrait", unit:"mm", format:"a4" });
+  const c = calcDevis();
+  const d = state.devis;
+  const num = state.quoteNum;
+  const W = 210, M = 14;
+
+  // Fond header
+  doc.setFillColor(26,122,110);
+  doc.roundedRect(M, 10, W-M*2, 32, 4, 4, "F");
+
+  // Titre société
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(16); doc.setFont("helvetica","bold");
+  doc.text("CATHY PETS", M+6, 22);
+  doc.setFontSize(8); doc.setFont("helvetica","normal");
+  doc.text("Petsitter & Taxi Animaliers Domestiques & Sauvages", M+6, 28);
+  doc.text(`${CP.adresse} · ${CP.cp_ville}`, M+6, 33);
+
+  // Coordonnées droite
+  doc.setFontSize(8);
+  doc.text([`Taxi : ${CP.tel_taxi}`, `Garde : ${CP.tel_garde}`, CP.email, CP.site], W-M-6, 22, {align:"right"});
+
+  // Ligne dorée
+  doc.setDrawColor(212,168,67); doc.setLineWidth(0.8);
+  doc.line(M, 44, W-M, 44);
+
+  // Type document
+  const titre = type==="devis" ? "DEVIS DE TRANSPORT ANIMALIER" : "FACTURE DE TRANSPORT ANIMALIER";
+  doc.setTextColor(26,122,110); doc.setFontSize(13); doc.setFont("helvetica","bold");
+  doc.text(titre, M, 53);
+
+  // Numéro et dates
+  doc.setTextColor(100,100,100); doc.setFontSize(8); doc.setFont("helvetica","normal");
+  const label = type==="devis" ? "Devis" : "Facture";
+  doc.text([
+    `N° ${num}`,
+    `Émis le : ${new Date().toLocaleDateString("fr-FR")}`,
+    type==="devis" ? `Valable jusqu'au : ${validityDate()}` : `Date prestation : ${d.dateTransport||"__________"}`,
+  ], W-M, 50, {align:"right"});
+
+  // Séparateur
+  doc.setDrawColor(200,222,221); doc.setLineWidth(0.3);
+  doc.line(M, 57, W-M, 57);
+
+  // Bloc client
+  doc.setFillColor(232,245,243);
+  doc.roundedRect(M, 60, W-M*2, 28, 3, 3, "F");
+  doc.setTextColor(26,122,110); doc.setFontSize(8); doc.setFont("helvetica","bold");
+  doc.text("CLIENT", M+4, 67);
+  doc.setTextColor(50,50,50); doc.setFont("helvetica","normal"); doc.setFontSize(9);
+  doc.text(d.client||"________________", M+4, 74);
+  doc.setFontSize(8); doc.setTextColor(100,100,100);
+  doc.text(`Tél : ${d.tel||"________________"}   Email : ${d.email||"________________"}`, M+4, 80);
+  doc.text(`Type client : ${d.typeClient==="professionnel" ? "Professionnel (B2B)" : "Particulier (B2C)"}`, M+4, 85);
+
+  // Bandeaux trajets
+  let y = 95;
+
+  // Aller
+  doc.setFillColor(30,95,173);
+  doc.roundedRect(M, y, (W-M*2-4)/2, 26, 3, 3, "F");
+  doc.setTextColor(255,255,255); doc.setFontSize(7); doc.setFont("helvetica","bold");
+  doc.text("ALLER — AVEC ANIMAUX", M+4, y+7);
+  doc.setFont("helvetica","normal"); doc.setFontSize(8);
+  doc.text(`${d.villeD||"___"} ${d.cpD||""} (${d.paysD})`, M+4, y+13);
+  doc.setFont("helvetica","bold");
+  doc.text("→", M+4, y+18);
+  doc.setFont("helvetica","normal");
+  doc.text(`${d.villeA||"___"} ${d.cpA||""} (${d.paysA})`, M+10, y+18);
+  doc.setFontSize(7.5);
+  doc.text(`${c.kmA} km · ${d.nbAnim} ${d.typeAnim}`, M+4, y+23);
+
+  // Retour
+  if (d.retour==="oui") {
+    const xR = M + (W-M*2-4)/2 + 4;
+    doc.setFillColor(123,45,139);
+    doc.roundedRect(xR, y, (W-M*2-4)/2, 26, 3, 3, "F");
+    doc.setTextColor(255,255,255); doc.setFontSize(7); doc.setFont("helvetica","bold");
+    doc.text("RETOUR — A VIDE", xR+4, y+7);
+    doc.setFont("helvetica","normal"); doc.setFontSize(8);
+    doc.text(`${d.villeA||"___"} (${d.paysA})`, xR+4, y+13);
+    doc.setFont("helvetica","bold"); doc.text("→", xR+4, y+18);
+    doc.setFont("helvetica","normal");
+    doc.text(`${d.villeR||"Neuilly-Saint-Front"}`, xR+10, y+18);
+    doc.setFontSize(7.5);
+    doc.text(`${c.kmR} km`, xR+4, y+23);
+  }
+
+  y += 32;
+
+  // Table prestations
+  const cols = [10, 62, 52, 28, 28];
+  const headers = ["N°", "Prestation", "Détail / Itinéraire", "Distance", "Montant TTC"];
+  const startX = M;
+  let tx = startX;
+
+  // Header table
+  doc.setFillColor(26,122,110);
+  doc.rect(M, y, W-M*2, 8, "F");
+  doc.setTextColor(255,255,255); doc.setFontSize(7.5); doc.setFont("helvetica","bold");
+  headers.forEach((h,i) => {
+    doc.text(h, tx+cols[i]/2, y+5.5, {align:"center"});
+    tx += cols[i];
+  });
+
+  y += 8;
+
+  // Lignes table
+  const rows = [
+    ["1", `Transport aller\n${d.nbAnim} ${d.typeAnim}`, `${d.villeD||"___"} → ${d.villeA||"___"}`, `${c.kmA} km`, eur(c.allerTTC)],
+    ...(d.retour==="oui" ? [["2", "Retour à vide", `${d.villeA||"___"} → ${d.villeR||"Neuilly"}`, `${c.kmR} km`, eur(c.retourTTC)]] : []),
+    ["3", "Péages inclus", "France, Belgique, Pays-Bas", "Inclus", "Inclus"],
+    ["4", "RC Pro incluse", "Hiscox HSXIN320028640M", "Inclus", "Inclus"],
+  ];
+
+  rows.forEach((row, ri) => {
+    if (ri % 2 === 0) { doc.setFillColor(232,245,243); doc.rect(M, y, W-M*2, 10, "F"); }
+    doc.setTextColor(50,50,50); doc.setFont("helvetica","normal"); doc.setFontSize(8);
+    tx = startX;
+    row.forEach((cell, ci) => {
+      const lines = cell.split("\n");
+      lines.forEach((ln, li) => doc.text(ln, tx+cols[ci]/2, y+4+(li*4), {align:"center"}));
+      tx += cols[ci];
+    });
+    y += 10;
+  });
+
+  // Ligne séparatrice
+  doc.setDrawColor(200,222,221); doc.setLineWidth(0.3);
+  doc.line(M, y, W-M, y);
+  y += 6;
+
+  // Bloc totaux
+  const bx = W-M-76, bw = 76;
+  doc.setFillColor(26,122,110);
+  doc.roundedRect(bx, y, bw, 44, 4, 4, "F");
+  doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont("helvetica","normal");
+  doc.text("Transport aller TTC", bx+4, y+8);
+  doc.text(eur(c.allerTTC), bx+bw-4, y+8, {align:"right"});
+  if (d.retour==="oui") {
+    doc.text("Retour à vide TTC", bx+4, y+14);
+    doc.text(eur(c.retourTTC), bx+bw-4, y+14, {align:"right"});
+  }
+  doc.text("Total HT", bx+4, y+20);
+  doc.text(eur(c.totalHT), bx+bw-4, y+20, {align:"right"});
+  doc.text("TVA 20%", bx+4, y+26);
+  doc.text(eur(c.tvaMnt), bx+bw-4, y+26, {align:"right"});
+
+  doc.setDrawColor(212,168,67); doc.setLineWidth(0.5);
+  doc.line(bx+4, y+29, bx+bw-4, y+29);
+
+  doc.setFontSize(11); doc.setFont("helvetica","bold");
+  doc.setTextColor(212,168,67);
+  doc.text("TOTAL TTC", bx+4, y+36);
+  doc.text(eur(c.totalTTC), bx+bw-4, y+36, {align:"right"});
+
+  doc.setFontSize(7.5); doc.setFont("helvetica","normal");
+  doc.setTextColor(200,230,225);
+  doc.text(`Acompte 50% : ${eur(c.acompte)}`, bx+4, y+42);
+  doc.text(`Solde : ${eur(c.solde)}`, bx+bw-4, y+42, {align:"right"});
+
+  y += 50;
+
+  // Paiement
+  if (type==="devis") {
+    doc.setFillColor(255,249,232);
+    doc.roundedRect(M, y, 90, 24, 3, 3, "F");
+    doc.setTextColor(154,110,0); doc.setFontSize(7); doc.setFont("helvetica","bold");
+    doc.text("MODALITÉS DE PAIEMENT", M+4, y+6);
+    doc.setFont("helvetica","normal"); doc.setTextColor(80,80,80); doc.setFontSize(7.5);
+    doc.text(`Acompte 50% à la commande : ${eur(c.acompte)}`, M+4, y+12);
+    doc.text(`Solde avant prise en charge : ${eur(c.solde)}`, M+4, y+17);
+    doc.text("Virement · Chèque · Espèces · PayPal", M+4, y+22);
+    y += 28;
+  }
+
+  // Bon pour accord (devis) ou date paiement (facture)
+  if (type==="devis") {
+    doc.setFillColor(240,240,240);
+    doc.roundedRect(M, y, W-M*2, 24, 3, 3, "F");
+    doc.setTextColor(80,80,80); doc.setFontSize(7); doc.setFont("helvetica","bold");
+    doc.text("BON POUR ACCORD — Signature client :", M+4, y+6);
+    doc.setFont("helvetica","italic"); doc.setFontSize(7);
+    doc.text("Mention manuscrite obligatoire : « Bon pour accord »", M+4, y+11);
+    doc.setDrawColor(150,150,150); doc.setLineWidth(0.3);
+    doc.line(M+4, y+20, M+80, y+20);
+    doc.text("Pour Cathy Pets :", M+90, y+6, {align:"left"});
+    doc.line(M+90, y+20, W-M-4, y+20);
+    y += 28;
+  }
+
+  // Footer légal
+  const footerY = 270;
+  doc.setDrawColor(26,122,110); doc.setLineWidth(0.5);
+  doc.line(M, footerY, W-M, footerY);
+  doc.setTextColor(130,130,130); doc.setFontSize(6.5); doc.setFont("helvetica","normal");
+  doc.text(`${CP.societe} — SIRET : ${CP.siret} · ${CP.rcs} · TVA : ${CP.tva} · RC Pro : ${CP.rcp}`, W/2, footerY+4, {align:"center"});
+  doc.text(`${CP.adresse}, ${CP.cp_ville} · Tél : ${CP.tel_taxi} · ${CP.email} · ${CP.site}`, W/2, footerY+8, {align:"center"});
+  doc.text("Transport régi par Règlement CE n°576/2013 et CE n°561/2006 · RGPD UE 2016/679", W/2, footerY+12, {align:"center"});
+  if (type==="facture") {
+    doc.setTextColor(212,168,67); doc.setFont("helvetica","bold");
+    doc.text("CONFORME EN 16931 — FACTUR-X MINIMUM", W/2, footerY+17, {align:"center"});
+  }
+
+  const fname = type==="devis" ? `Devis_${d.client||"Client"}_${num}.pdf` : `Facture_${d.client||"Client"}_${num}.pdf`;
+  doc.save(fname);
+}
+
+// ═══════════════════════════════════════════════════════
+//  GÉNÉRATION XML FACTUR-X
+// ═══════════════════════════════════════════════════════
+function genFacturX() {
+  const c = calcDevis();
+  const d = state.devis;
+  const num = state.quoteNum;
+  const today = new Date().toISOString().split("T")[0].replace(/-/g,"");
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<!-- FACTUR-X EN 16931 — Conforme réforme facturation électronique France 2027 -->
+<rsm:CrossIndustryInvoice
+  xmlns:rsm="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100"
+  xmlns:ram="urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100"
+  xmlns:udt="urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100">
+
+  <rsm:ExchangedDocumentContext>
+    <ram:GuidelineSpecifiedDocumentContextParameter>
+      <ram:ID>urn:cen.eu:en16931:2017#compliant#urn:factur-x.eu:1p0:en16931</ram:ID>
+    </ram:GuidelineSpecifiedDocumentContextParameter>
+  </rsm:ExchangedDocumentContext>
+
+  <rsm:ExchangedDocument>
+    <ram:ID>${num}</ram:ID>
+    <ram:TypeCode>380</ram:TypeCode>
+    <ram:IssueDateTime>
+      <udt:DateTimeString format="102">${today}</udt:DateTimeString>
+    </ram:IssueDateTime>
+    <ram:LanguageID>fr</ram:LanguageID>
+    <ram:IncludedNote>
+      <ram:Content>Transport animalier — ${d.nbAnim} ${d.typeAnim} — ${d.villeD} → ${d.villeA}</ram:Content>
+    </ram:IncludedNote>
+  </rsm:ExchangedDocument>
+
+  <rsm:SupplyChainTradeTransaction>
+
+    <ram:IncludedSupplyChainTradeLineItem>
+      <ram:AssociatedDocumentLineDocument>
+        <ram:LineID>1</ram:LineID>
+      </ram:AssociatedDocumentLineDocument>
+      <ram:SpecifiedTradeProduct>
+        <ram:Name>Transport aller avec animaux — ${d.villeD} vers ${d.villeA}</ram:Name>
+        <ram:Description>${c.kmA} km · ${d.nbAnim} ${d.typeAnim} · Péages inclus</ram:Description>
+      </ram:SpecifiedTradeProduct>
+      <ram:SpecifiedLineTradeAgreement>
+        <ram:NetPriceProductTradePrice>
+          <ram:ChargeAmount>${(c.allerTTC/1.20/Math.max(c.kmA,1)).toFixed(4)}</ram:ChargeAmount>
+          <ram:BasisQuantity unitCode="KMT">${c.kmA}</ram:BasisQuantity>
+        </ram:NetPriceProductTradePrice>
+      </ram:SpecifiedLineTradeAgreement>
+      <ram:SpecifiedLineTradeDelivery>
+        <ram:BilledQuantity unitCode="KMT">${c.kmA}</ram:BilledQuantity>
+      </ram:SpecifiedLineTradeDelivery>
+      <ram:SpecifiedLineTradeSettlement>
+        <ram:ApplicableTradeTax>
+          <ram:TypeCode>VAT</ram:TypeCode>
+          <ram:CategoryCode>S</ram:CategoryCode>
+          <ram:RateApplicablePercent>20</ram:RateApplicablePercent>
+        </ram:ApplicableTradeTax>
+        <ram:SpecifiedTradeSettlementLineMonetarySummation>
+          <ram:LineTotalAmount>${(c.allerTTC/1.20).toFixed(2)}</ram:LineTotalAmount>
+        </ram:SpecifiedTradeSettlementLineMonetarySummation>
+      </ram:SpecifiedLineTradeSettlement>
+    </ram:IncludedSupplyChainTradeLineItem>
+
+    ${d.retour==="oui" ? `<ram:IncludedSupplyChainTradeLineItem>
+      <ram:AssociatedDocumentLineDocument>
+        <ram:LineID>2</ram:LineID>
+      </ram:AssociatedDocumentLineDocument>
+      <ram:SpecifiedTradeProduct>
+        <ram:Name>Retour à vide — ${d.villeA} vers ${d.villeR||"Neuilly-Saint-Front"}</ram:Name>
+        <ram:Description>${c.kmR} km · Véhicule vide · Péages inclus</ram:Description>
+      </ram:SpecifiedTradeProduct>
+      <ram:SpecifiedLineTradeAgreement>
+        <ram:NetPriceProductTradePrice>
+          <ram:ChargeAmount>${(c.retourTTC/1.20/Math.max(c.kmR,1)).toFixed(4)}</ram:ChargeAmount>
+          <ram:BasisQuantity unitCode="KMT">${c.kmR}</ram:BasisQuantity>
+        </ram:NetPriceProductTradePrice>
+      </ram:SpecifiedLineTradeAgreement>
+      <ram:SpecifiedLineTradeDelivery>
+        <ram:BilledQuantity unitCode="KMT">${c.kmR}</ram:BilledQuantity>
+      </ram:SpecifiedLineTradeDelivery>
+      <ram:SpecifiedLineTradeSettlement>
+        <ram:ApplicableTradeTax>
+          <ram:TypeCode>VAT</ram:TypeCode>
+          <ram:CategoryCode>S</ram:CategoryCode>
+          <ram:RateApplicablePercent>20</ram:RateApplicablePercent>
+        </ram:ApplicableTradeTax>
+        <ram:SpecifiedTradeSettlementLineMonetarySummation>
+          <ram:LineTotalAmount>${(c.retourTTC/1.20).toFixed(2)}</ram:LineTotalAmount>
+        </ram:SpecifiedTradeSettlementLineMonetarySummation>
+      </ram:SpecifiedLineTradeSettlement>
+    </ram:IncludedSupplyChainTradeLineItem>` : ""}
+
+    <ram:ApplicableHeaderTradeAgreement>
+      <ram:SellerTradeParty>
+        <ram:Name>${CP.societe}</ram:Name>
+        <ram:PostalTradeAddress>
+          <ram:LineOne>${CP.adresse}</ram:LineOne>
+          <ram:PostcodeCode>02470</ram:PostcodeCode>
+          <ram:CityName>Neuilly-Saint-Front</ram:CityName>
+          <ram:CountryID>FR</ram:CountryID>
+        </ram:PostalTradeAddress>
+        <ram:SpecifiedTaxRegistration>
+          <ram:ID schemeID="VA">${CP.tva}</ram:ID>
+        </ram:SpecifiedTaxRegistration>
+        <ram:SpecifiedLegalOrganization>
+          <ram:ID schemeID="0002">${CP.siret.replace(/ /g,"")}</ram:ID>
+        </ram:SpecifiedLegalOrganization>
+      </ram:SellerTradeParty>
+      <ram:BuyerTradeParty>
+        <ram:Name>${d.client||"Client"}</ram:Name>
+        <ram:PostalTradeAddress>
+          <ram:LineOne>${d.villeD||""}</ram:LineOne>
+          <ram:PostcodeCode>${d.cpD||""}</ram:PostcodeCode>
+          <ram:CityName>${d.villeD||""}</ram:CityName>
+          <ram:CountryID>${d.paysD==="France"?"FR":d.paysD==="Pays-Bas"?"NL":d.paysD==="Belgique"?"BE":"FR"}</ram:CountryID>
+        </ram:PostalTradeAddress>
+      </ram:BuyerTradeParty>
+    </ram:ApplicableHeaderTradeAgreement>
+
+    <ram:ApplicableHeaderTradeDelivery>
+      <ram:ActualDeliverySupplyChainEvent>
+        <ram:OccurrenceDateTime>
+          <udt:DateTimeString format="102">${today}</udt:DateTimeString>
+        </ram:OccurrenceDateTime>
+      </ram:ActualDeliverySupplyChainEvent>
+    </ram:ApplicableHeaderTradeDelivery>
+
+    <ram:ApplicableHeaderTradeSettlement>
+      <ram:InvoiceCurrencyCode>EUR</ram:InvoiceCurrencyCode>
+      <ram:ApplicableTradeTax>
+        <ram:CalculatedAmount>${c.tvaMnt.toFixed(2)}</ram:CalculatedAmount>
+        <ram:TypeCode>VAT</ram:TypeCode>
+        <ram:BasisAmount>${c.totalHT.toFixed(2)}</ram:BasisAmount>
+        <ram:CategoryCode>S</ram:CategoryCode>
+        <ram:RateApplicablePercent>20</ram:RateApplicablePercent>
+      </ram:ApplicableTradeTax>
+      <ram:SpecifiedTradePaymentTerms>
+        <ram:Description>Acompte 50% a la commande. Solde avant prise en charge.</ram:Description>
+      </ram:SpecifiedTradePaymentTerms>
+      <ram:SpecifiedTradeSettlementHeaderMonetarySummation>
+        <ram:LineTotalAmount>${c.totalHT.toFixed(2)}</ram:LineTotalAmount>
+        <ram:TaxBasisTotalAmount>${c.totalHT.toFixed(2)}</ram:TaxBasisTotalAmount>
+        <ram:TaxTotalAmount currencyID="EUR">${c.tvaMnt.toFixed(2)}</ram:TaxTotalAmount>
+        <ram:GrandTotalAmount>${c.totalTTC.toFixed(2)}</ram:GrandTotalAmount>
+        <ram:DuePayableAmount>${c.totalTTC.toFixed(2)}</ram:DuePayableAmount>
+      </ram:SpecifiedTradeSettlementHeaderMonetarySummation>
+    </ram:ApplicableHeaderTradeSettlement>
+
+  </rsm:SupplyChainTradeTransaction>
+</rsm:CrossIndustryInvoice>`;
+
+  const blob = new Blob([xml], {type:"text/xml;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `FacturX_${d.client||"Client"}_${num}.xml`;
+  a.click();
+}
+
+// ═══════════════════════════════════════════════════════
+//  RENDU
+// ═══════════════════════════════════════════════════════
+function render() {
+  document.getElementById("app").innerHTML = `
+    ${renderHeader()}
+    ${renderPage()}
+    ${renderTabBar()}
+  `;
+  attachEvents();
+}
+
+function renderHeader() {
+  return `
+  <div style="background:linear-gradient(160deg,#0D4A43,#1A7A6E);padding:12px 14px 8px;position:sticky;top:0;z-index:50;">
+    <div style="display:flex;align-items:center;justify-content:space-between;max-width:600px;margin:0 auto;">
+      <div>
+        <div style="font-size:17px;font-weight:800;color:#fff;letter-spacing:0.06em;">🐾 CATHY PETS</div>
+        <div style="font-size:9px;color:#A8D8D4;letter-spacing:0.08em;">${todayFR()}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:10px;color:#D4A843;font-weight:700;">${CP.tel_taxi}</div>
+        <div style="font-size:9px;color:rgba(255,255,255,0.5);">${CP.site}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderTabBar() {
+  const tabs = [
+    {id:"matin",  ico:"☀️", lbl:"Matin"},
+    {id:"devis",  ico:"📋", lbl:"Devis"},
+    {id:"facture",ico:"🧾", lbl:"Facture"},
+    {id:"tarifs", ico:"💰", lbl:"Tarifs"},
+    {id:"infos",  ico:"🏢", lbl:"Société"},
+  ];
+  return `<div class="tab-bar">${tabs.map(t=>`
+    <button class="tab-btn ${state.tab===t.id?"active":""}" onclick="setTab('${t.id}')">
+      <span class="ico">${t.ico}</span>
+      <span class="lbl">${t.lbl}</span>
+    </button>`).join("")}
+  </div>`;
+}
+
+function renderPage() {
+  const pages = {
+    matin: renderMatin,
+    devis: renderDevis,
+    facture: renderFacture,
+    tarifs: renderTarifs,
+    infos: renderInfos,
+  };
+  return `<div class="page fade">${(pages[state.tab]||renderMatin)()}</div>`;
+}
+
+// ─── PAGE MATIN ─────────────────────────────────────────
+function renderMatin() {
+  const CHECK_ITEMS = [
+    {id:"c1",ico:"📧",lbl:"Vérifier les nouveaux emails"},
+    {id:"c2",ico:"⏰",lbl:"Relancer devis > 5 jours"},
+    {id:"c3",ico:"🚐",lbl:"Confirmer transports du jour"},
+    {id:"c4",ico:"💰",lbl:"Vérifier paiements reçus"},
+    {id:"c5",ico:"📋",lbl:"Répondre aux demandes de devis"},
+    {id:"c6",ico:"📅",lbl:"Mettre à jour le planning"},
+    {id:"c7",ico:"📄",lbl:"Documents sanitaires clients"},
+  ];
+  const done = Object.values(state.checks).filter(Boolean).length;
+
+  return `
+  <!-- Bouton check global -->
+  <button class="btn btn-gold btn-full" style="margin-bottom:12px;font-size:14px;padding:14px;" onclick="lancerCheck()">
+    ${state.loading.matin ? '<span class="spin">⏳</span> Analyse en cours...' : '⚡ Lancer le check du matin'}
+  </button>
+
+  <!-- Briefing IA -->
+  <div class="card">
+    <div class="card-title">☀️ Briefing du matin</div>
+    ${state.loading.matin && !state.ai.briefing ? '<div style="color:#6B7878;font-size:13px;"><span class="spin">⏳</span> Préparation de votre briefing...</div>' : ""}
+    ${state.ai.briefing ? `<div class="ai-box">${state.ai.briefing}</div>` : ""}
+    ${!state.loading.matin && !state.ai.briefing ? '<div style="color:#6B7878;font-size:13px;text-align:center;padding:12px 0;">Cliquez sur ⚡ pour démarrer</div>' : ""}
+  </div>
+
+  <!-- Agenda -->
+  <div class="card">
+    <div class="row" style="margin-bottom:12px;">
+      <div class="card-title" style="margin-bottom:0;">📅 Rendez-vous du jour</div>
+      <span class="pill" style="background:#E8F5F3;color:#1A7A6E;">Google Calendar</span>
+    </div>
+    ${state.loading.matin && !state.ai.rdv ? '<div style="color:#6B7878;font-size:13px;"><span class="spin">⏳</span> Lecture de l\'agenda...</div>' : ""}
+    ${state.ai.rdv ? `<div class="ai-box">${state.ai.rdv}</div>` : ""}
+    ${!state.loading.matin && !state.ai.rdv ? '<div style="color:#6B7878;font-size:13px;text-align:center;padding:8px 0;">—</div>' : ""}
+  </div>
+
+  <!-- Emails -->
+  <div class="card">
+    <div class="row" style="margin-bottom:12px;">
+      <div class="card-title" style="margin-bottom:0;">📧 Emails & Nouveaux devis</div>
+      <span class="pill" style="background:#FFF0F0;color:#E74C3C;">Gmail</span>
+    </div>
+    ${state.loading.matin && !state.ai.emails ? '<div style="color:#6B7878;font-size:13px;"><span class="spin">⏳</span> Lecture des emails...</div>' : ""}
+    ${state.ai.emails ? `
+      <div class="ai-box" style="background:#FFF5F5;">${state.ai.emails}</div>
+      ${state.ai.emails.toLowerCase().includes("devis")||state.ai.emails.toLowerCase().includes("transport") ? `
+        <button class="btn btn-blue btn-sm" style="margin-top:10px;" onclick="analyserEmails()">
+          ${state.loading.analyse ? '<span class="spin">⏳</span>' : '🤖'} Générer réponses suggérées
+        </button>
+        ${state.ai.suggestion ? `<div class="ai-box" style="margin-top:10px;">${state.ai.suggestion}</div>` : ""}
+      ` : ""}
+    ` : ""}
+    ${!state.loading.matin && !state.ai.emails ? '<div style="color:#6B7878;font-size:13px;text-align:center;padding:8px 0;">—</div>' : ""}
+  </div>
+
+  <!-- Checklist -->
+  <div class="card">
+    <div class="row" style="margin-bottom:12px;">
+      <div class="card-title" style="margin-bottom:0;">✅ Checklist</div>
+      <span style="font-size:11px;font-weight:700;color:#1A7A6E;">${done}/${CHECK_ITEMS.length}</span>
+    </div>
+    ${CHECK_ITEMS.map(it=>`
+      <div class="checklist-item" onclick="toggleCheck('${it.id}')">
+        <div class="check-box ${state.checks[it.id]?"done":""}">
+          ${state.checks[it.id]?'<span style="color:#fff;font-size:13px;">✓</span>':""}
+        </div>
+        <span style="font-size:13px;color:${state.checks[it.id]?"#9AABAA":"#1C2B2A"};text-decoration:${state.checks[it.id]?"line-through":"none"};">${it.ico} ${it.lbl}</span>
+      </div>
+    `).join("")}
+  </div>
+
+  <!-- Tarifs rapides -->
+  <div class="card">
+    <div class="card-title">💰 Grille tarifaire</div>
+    <div style="display:flex;gap:10px;">
+      <div style="flex:1;background:#E8EEF8;border-radius:12px;padding:12px;text-align:center;">
+        <div style="font-size:10px;font-weight:700;color:#1E5FAD;margin-bottom:4px;">ALLER AVEC ANIMAUX</div>
+        <div style="font-size:20px;font-weight:900;color:#1E5FAD;">${TARIF_A.toFixed(2)}€</div>
+        <div style="font-size:9px;color:#6B7878;">par km TTC</div>
+      </div>
+      <div style="flex:1;background:#F3EAF8;border-radius:12px;padding:12px;text-align:center;">
+        <div style="font-size:10px;font-weight:700;color:#7B2D8B;margin-bottom:4px;">RETOUR À VIDE</div>
+        <div style="font-size:20px;font-weight:900;color:#7B2D8B;">${TARIF_R.toFixed(2)}€</div>
+        <div style="font-size:9px;color:#6B7878;">par km TTC</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── PAGE DEVIS ─────────────────────────────────────────
+function renderDevis() {
+  const c = calcDevis();
+  const d = state.devis;
+  return `
+  <div class="card">
+    <div class="card-title">👤 Client</div>
+    <div class="inp-wrap"><label class="inp-label">Nom client</label><input class="inp" id="f-client" value="${d.client}" placeholder="Ex : Rassy" oninput="updateDevis('client',this.value)"></div>
+    <div class="inp-wrap"><label class="inp-label">Type de client</label>
+      <select class="inp" onchange="updateDevis('typeClient',this.value)">
+        <option value="particulier" ${d.typeClient==="particulier"?"selected":""}>Particulier (B2C)</option>
+        <option value="professionnel" ${d.typeClient==="professionnel"?"selected":""}>Professionnel (B2B — Factur-X)</option>
+      </select>
+    </div>
+    <div class="grid2">
+      <div class="inp-wrap"><label class="inp-label">Email</label><input class="inp" value="${d.email}" placeholder="email@..." oninput="updateDevis('email',this.value)"></div>
+      <div class="inp-wrap"><label class="inp-label">Téléphone</label><input class="inp" value="${d.tel}" placeholder="06..." oninput="updateDevis('tel',this.value)"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🐾 Animaux</div>
+    <div class="grid2">
+      <div class="inp-wrap"><label class="inp-label">Nombre</label>
+        <select class="inp" onchange="updateDevis('nbAnim',this.value)">
+          ${[1,2,3,4,5].map(n=>`<option value="${n}" ${d.nbAnim==n?"selected":""}>${n} animal${n>1?"x":""}</option>`).join("")}
+        </select>
+      </div>
+      <div class="inp-wrap"><label class="inp-label">Type</label>
+        <select class="inp" onchange="updateDevis('typeAnim',this.value)">
+          ${["chat","chien","lapin","oiseau","reptile","autre"].map(v=>`<option value="${v}" ${d.typeAnim===v?"selected":""}>${v.charAt(0).toUpperCase()+v.slice(1)}</option>`).join("")}
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="color:#1E5FAD;">🔵 Trajet ALLER — avec animaux</div>
+    <div class="grid2">
+      <div class="inp-wrap"><label class="inp-label">Ville départ</label><input class="inp" value="${d.villeD}" placeholder="Roissy-en-France" oninput="updateDevis('villeD',this.value)"></div>
+      <div class="inp-wrap"><label class="inp-label">Code postal</label><input class="inp" value="${d.cpD}" placeholder="95700" oninput="updateDevis('cpD',this.value)"></div>
+    </div>
+    <div class="inp-wrap"><label class="inp-label">Pays départ</label>
+      <select class="inp" onchange="updateDevis('paysD',this.value)">
+        ${["France","Belgique","Pays-Bas","Allemagne","Espagne","Italie","Autre"].map(p=>`<option value="${p}" ${d.paysD===p?"selected":""}>${p}</option>`).join("")}
+      </select>
+    </div>
+    <div class="grid2">
+      <div class="inp-wrap"><label class="inp-label">Ville arrivée</label><input class="inp" value="${d.villeA}" placeholder="La Haye" oninput="updateDevis('villeA',this.value)"></div>
+      <div class="inp-wrap"><label class="inp-label">Code postal</label><input class="inp" value="${d.cpA}" placeholder="2517 AA" oninput="updateDevis('cpA',this.value)"></div>
+    </div>
+    <div class="inp-wrap"><label class="inp-label">Pays arrivée</label>
+      <select class="inp" onchange="updateDevis('paysA',this.value)">
+        ${["France","Belgique","Pays-Bas","Allemagne","Espagne","Italie","Autre"].map(p=>`<option value="${p}" ${d.paysA===p?"selected":""}>${p}</option>`).join("")}
+      </select>
+    </div>
+    <div class="inp-wrap"><label class="inp-label">Distance aller (km)</label><input class="inp" type="number" value="${d.kmA}" placeholder="480" oninput="updateDevis('kmA',this.value)"></div>
+  </div>
+
+  <div class="card">
+    <div class="inp-wrap"><label class="inp-label">Retour à vide ?</label>
+      <select class="inp" onchange="updateDevis('retour',this.value)">
+        <option value="oui" ${d.retour==="oui"?"selected":""}>Oui — retour à vide facturé</option>
+        <option value="non" ${d.retour==="non"?"selected":""}>Non — aller simple</option>
+      </select>
+    </div>
+    ${d.retour==="oui" ? `
+      <div class="card-title" style="color:#7B2D8B;margin-top:4px;">🟣 Trajet RETOUR — à vide</div>
+      <div class="grid2">
+        <div class="inp-wrap"><label class="inp-label">Ville retour</label><input class="inp" value="${d.villeR}" placeholder="Neuilly-Saint-Front" oninput="updateDevis('villeR',this.value)"></div>
+        <div class="inp-wrap"><label class="inp-label">Code postal</label><input class="inp" value="${d.cpR}" placeholder="02470" oninput="updateDevis('cpR',this.value)"></div>
+      </div>
+      <div class="inp-wrap"><label class="inp-label">Distance retour (vide = même km que aller)</label><input class="inp" type="number" value="${d.kmR}" placeholder="${d.kmA||480}" oninput="updateDevis('kmR',this.value)"></div>
+    ` : ""}
+  </div>
+
+  <div class="card">
+    <div class="inp-wrap"><label class="inp-label">Date de transport souhaitée</label><input class="inp" type="date" value="${d.dateTransport}" onchange="updateDevis('dateTransport',this.value)"></div>
+    <div class="inp-wrap"><label class="inp-label">Notes / remarques</label><textarea class="inp" rows="2" placeholder="Heure souhaitée, informations particulières..." oninput="updateDevis('notes',this.value)">${d.notes}</textarea></div>
+  </div>
+
+  <!-- CALCUL -->
+  ${c.kmA > 0 ? `
+  <div class="card">
+    <div class="card-title">💶 Calcul automatique — N° ${state.quoteNum}</div>
+    <div style="background:#E8EEF8;border-radius:10px;padding:10px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;color:#1E5FAD;font-weight:700;">Transport aller</span>
+      <span style="font-size:15px;font-weight:900;color:#1E5FAD;">${eur(c.allerTTC)}</span>
+    </div>
+    ${d.retour==="oui" && c.kmR > 0 ? `
+    <div style="background:#F3EAF8;border-radius:10px;padding:10px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;color:#7B2D8B;font-weight:700;">Retour à vide</span>
+      <span style="font-size:15px;font-weight:900;color:#7B2D8B;">${eur(c.retourTTC)}</span>
+    </div>` : ""}
+    <div class="divider"></div>
+    <div class="row" style="margin-bottom:6px;"><span style="font-size:12px;color:#6B7878;">Total HT</span><span style="font-size:12px;font-weight:700;color:#6B7878;">${eur(c.totalHT)}</span></div>
+    <div class="row" style="margin-bottom:6px;"><span style="font-size:12px;color:#6B7878;">TVA 20%</span><span style="font-size:12px;font-weight:700;color:#6B7878;">${eur(c.tvaMnt)}</span></div>
+    <div class="total-box">
+      <div style="font-size:10px;color:rgba(255,255,255,0.7);margin-bottom:4px;letter-spacing:0.1em;">TOTAL TTC</div>
+      <div style="font-size:28px;font-weight:900;color:#D4A843;">${eur(c.totalTTC)}</div>
+      <div style="display:flex;gap:16px;margin-top:10px;justify-content:center;">
+        <div style="text-align:center;"><div style="font-size:9px;color:rgba(255,255,255,0.6);">Acompte 50%</div><div style="font-size:16px;font-weight:800;color:#fff;">${eur(c.acompte)}</div></div>
+        <div style="border-left:1px solid rgba(255,255,255,0.2);"></div>
+        <div style="text-align:center;"><div style="font-size:9px;color:rgba(255,255,255,0.6);">Solde</div><div style="font-size:16px;font-weight:800;color:#fff;">${eur(c.solde)}</div></div>
+      </div>
+    </div>
+
+    <!-- BOUTONS EXPORT -->
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
+      <button class="btn btn-primary btn-full" onclick="genPDF('devis')">📄 Télécharger le devis PDF</button>
+      ${d.typeClient==="professionnel" ? `
+        <button class="btn btn-blue btn-full" onclick="genPDF('facture')">🧾 Télécharger la facture PDF</button>
+        <button class="btn btn-outline btn-full" onclick="genFacturX()">🔗 Télécharger Factur-X (XML — EN 16931)</button>
+        <div style="background:#E8F5F3;border-radius:10px;padding:10px 12px;font-size:11px;color:#1A7A6E;font-weight:600;">
+          ✅ Factur-X conforme réforme 2027 — prêt pour votre PDP
+        </div>
+      ` : `
+        <button class="btn btn-outline btn-full" onclick="genPDF('facture')">🧾 Générer aussi la facture</button>
+      `}
+      <button class="btn btn-gold btn-full" onclick="nouveauNumero()">🔄 Nouveau numéro de devis</button>
+    </div>
+  </div>
+  ` : '<div class="card" style="text-align:center;color:#6B7878;font-size:13px;padding:24px;">Renseignez la distance pour voir le calcul 👆</div>'}`;
+}
+
+// ─── PAGE FACTURE ────────────────────────────────────────
+function renderFacture() {
+  return `
+  <div class="card">
+    <div class="card-title">🧾 Factures & Facturation électronique</div>
+    <div style="background:#E8F5F3;border-radius:12px;padding:14px;margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:700;color:#1A7A6E;margin-bottom:8px;">✅ Votre conformité réglementaire</div>
+      <div style="font-size:12px;color:#1C2B2A;line-height:1.8;">
+        🟢 <strong>Septembre 2026</strong> — Réception e-factures : vous êtes prête<br>
+        🟡 <strong>Septembre 2027</strong> — Émission e-factures (PME) : anticipé ici<br>
+        🔵 <strong>Factur-X</strong> — Format hybride PDF + XML déjà disponible
+      </div>
+    </div>
+
+    <div style="font-size:11px;font-weight:800;color:#1A7A6E;letter-spacing:0.08em;margin-bottom:10px;">COMMENT UTILISER</div>
+
+    <div style="display:flex;gap:8px;margin-bottom:8px;align-items:flex-start;">
+      <div style="background:#1A7A6E;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;">1</div>
+      <div style="font-size:12px;color:#1C2B2A;line-height:1.6;">Allez dans l'onglet <strong>📋 Devis</strong> et remplissez le formulaire client</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:8px;align-items:flex-start;">
+      <div style="background:#1A7A6E;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;">2</div>
+      <div style="font-size:12px;color:#1C2B2A;line-height:1.6;">Sélectionnez <strong>Professionnel (B2B)</strong> si le client est une entreprise</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:8px;align-items:flex-start;">
+      <div style="background:#1A7A6E;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;">3</div>
+      <div style="font-size:12px;color:#1C2B2A;line-height:1.6;">Téléchargez la <strong>facture PDF</strong> ET le fichier <strong>Factur-X XML</strong> — envoyez les deux à votre client</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:flex-start;">
+      <div style="background:#1A7A6E;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;">4</div>
+      <div style="font-size:12px;color:#1C2B2A;line-height:1.6;">Pour les <strong>particuliers</strong> : PDF seul suffit jusqu'en 2027 et au-delà</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📂 Formats disponibles</div>
+    ${[
+      {ico:"📄",label:"Devis PDF",desc:"Particuliers et professionnels · Valable 30 jours · Bon pour accord",color:"#1A7A6E"},
+      {ico:"🧾",label:"Facture PDF",desc:"Lisible · Mentions légales complètes · Conforme TVA",color:"#1E5FAD"},
+      {ico:"🔗",label:"Factur-X XML",desc:"EN 16931 · B2B uniquement · Compatible PDP · Prêt 2027",color:"#7B2D8B"},
+    ].map(f=>`
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #EEF5F4;">
+        <div style="font-size:24px;">${f.ico}</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;color:${f.color};">${f.label}</div>
+          <div style="font-size:11px;color:#6B7878;margin-top:2px;">${f.desc}</div>
+        </div>
+      </div>
+    `).join("")}
+  </div>
+
+  <button class="btn btn-primary btn-full" style="margin-bottom:12px;" onclick="setTab('devis')">
+    📋 Aller créer un devis / facture
+  </button>`;
+}
+
+// ─── PAGE TARIFS ─────────────────────────────────────────
+function renderTarifs() {
+  const simus = [100,200,300,500,800,1000,1200,1500];
+  return `
+  <div class="card">
+    <div class="card-title">💰 Grille tarifaire officielle</div>
+    <div style="background:#E8EEF8;border-radius:12px;padding:14px;margin-bottom:10px;">
+      <div style="font-size:10px;font-weight:800;color:#1E5FAD;margin-bottom:6px;">ALLER AVEC ANIMAUX</div>
+      <div style="font-size:28px;font-weight:900;color:#1E5FAD;">${TARIF_A.toFixed(2)} €<span style="font-size:14px;font-weight:500;">/km TTC</span></div>
+      <div style="font-size:11px;color:#6B7878;margin-top:4px;">Tout transport avec animal(aux)</div>
+    </div>
+    <div style="background:#F3EAF8;border-radius:12px;padding:14px;margin-bottom:10px;">
+      <div style="font-size:10px;font-weight:800;color:#7B2D8B;margin-bottom:6px;">RETOUR À VIDE</div>
+      <div style="font-size:28px;font-weight:900;color:#7B2D8B;">${TARIF_R.toFixed(2)} €<span style="font-size:14px;font-weight:500;">/km TTC</span></div>
+      <div style="font-size:11px;color:#6B7878;margin-top:4px;">Retour sans animal — tous trajets</div>
+    </div>
+    <div style="background:#FFF9E8;border:1px solid rgba(212,168,67,0.4);border-radius:12px;padding:12px;">
+      <div style="font-size:10px;font-weight:800;color:#9A6E00;margin-bottom:4px;">🔒 USAGE INTERNE — non visible client</div>
+      <div style="font-size:12px;color:#6B7878;">Surplus +10% sur frais réels (gasoil + péages)</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📈 Simulateur A/R</div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;font-weight:800;color:#6B7878;padding:6px 0;border-bottom:1px solid #EEF5F4;margin-bottom:4px;">
+      <span>Distance A/R</span><span>Total TTC</span><span>Marge est.</span>
+    </div>
+    ${simus.map(km=>{
+      const ttc = +(km*TARIF_A+km*TARIF_R).toFixed(0);
+      const ht  = +(ttc/1.20).toFixed(0);
+      const cout = Math.round(km*2*0.33);
+      const marge = Math.round(((ht-cout)/ht)*100);
+      const col = marge>30?"#27AE60":marge>20?"#D4A843":"#E74C3C";
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #EEF5F4;">
+        <span style="font-size:13px;color:#6B7878;">${km*2} km</span>
+        <span style="font-size:13px;font-weight:700;color:#1C2B2A;">${ttc} €</span>
+        <span style="font-size:13px;font-weight:800;color:${col};">≈ ${marge}%</span>
+      </div>`;
+    }).join("")}
+    <div style="font-size:10px;color:#9AABAA;margin-top:8px;font-style:italic;">* Estimation — varie selon péages, temps et diesel</div>
+  </div>`;
+}
+
+// ─── PAGE INFOS ──────────────────────────────────────────
+function renderInfos() {
+  return `
+  <div class="card">
+    <div class="card-title">🏢 Données entreprise</div>
+    ${[
+      ["Raison sociale", CP.societe],
+      ["Gérante", CP.gerante],
+      ["SIRET", CP.siret],
+      ["RCS", CP.rcs],
+      ["N° TVA intrac.", CP.tva],
+      ["RC Professionnelle", CP.rcp],
+      ["Adresse", `${CP.adresse}, ${CP.cp_ville}`],
+      ["Tél Taxi", CP.tel_taxi],
+      ["Tél Garde", CP.tel_garde],
+      ["Email", CP.email],
+      ["Site web", CP.site],
+    ].map(([k,v])=>`
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid #EEF5F4;gap:10px;">
+        <span style="font-size:11px;font-weight:700;color:#6B7878;flex-shrink:0;">${k}</span>
+        <span style="font-size:12px;font-weight:700;color:#1C2B2A;text-align:right;">${v}</span>
+      </div>`).join("")}
+  </div>
+
+  <div class="card">
+    <div class="card-title">✍️ Signature email</div>
+    <div style="background:#E8F5F3;border-radius:10px;padding:12px;font-size:12px;color:#1C2B2A;line-height:2;">
+      <strong style="color:#1A7A6E;">${CP.gerante}</strong><br>
+      <span style="color:#6B7878;">${CP.societe} — Taxi &amp; Pension Animalière</span><br>
+      <span style="color:#6B7878;">Taxi : ${CP.tel_taxi} · Garde : ${CP.tel_garde}</span><br>
+      <span style="color:#6B7878;">${CP.email}</span><br>
+      <span style="color:#1A7A6E;">${CP.site}</span>
+    </div>
+    <button class="btn btn-outline btn-sm" style="margin-top:10px;" onclick="copierSignature()">📋 Copier la signature</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">⚖️ Mentions légales</div>
+    <div style="font-size:11px;color:#6B7878;line-height:1.9;">
+      ${CP.societe}<br>
+      SIRET : ${CP.siret} · ${CP.rcs}<br>
+      TVA : ${CP.tva}<br>
+      RC Pro : ${CP.rcp}<br>
+      <span style="color:#1A7A6E;">CE n°576/2013 · CE n°561/2006 · RGPD UE 2016/679</span>
+    </div>
+  </div>
+
+  <div class="card" style="background:linear-gradient(135deg,#0D4A43,#1A7A6E);">
+    <div style="font-size:12px;font-weight:700;color:#D4A843;margin-bottom:8px;">📱 Installer sur Samsung</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.7;">
+      1. Ouvrez cette page dans <strong style="color:#fff;">Chrome</strong><br>
+      2. Menu (⋮) → <strong style="color:#fff;">Ajouter à l'écran d'accueil</strong><br>
+      3. Nommez-la "Cathy Pets" → Installer<br>
+      4. Partagez le lien à Cathy par <strong style="color:#fff;">WhatsApp</strong>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+//  ACTIONS
+// ═══════════════════════════════════════════════════════
+function setTab(t) { state.tab=t; location.hash=t; render(); }
+function updateDevis(k,v) { state.devis[k]=v; render(); }
+function toggleCheck(id) { state.checks[id]=!state.checks[id]; render(); }
+function nouveauNumero() { state.quoteNum=genNum(); render(); }
+
+function copierSignature() {
+  navigator.clipboard.writeText(`${CP.gerante}\n${CP.societe} — Taxi & Pension Animalière\nTaxi : ${CP.tel_taxi} · Garde : ${CP.tel_garde}\n${CP.email}\n${CP.site}`);
+  alert("✅ Signature copiée !");
+}
+
+async function lancerCheck() {
+  state.loading.matin = true; state.ai={briefing:"",rdv:"",emails:"",suggestion:""}; render();
+  try {
+    state.ai.briefing = await callClaude(`Tu es l'assistante de Cathy Pets SAS. Nous sommes le ${todayFR()}. Génère un briefing matinal professionnel pour Cathy DELORME (gérante). Inclus : accueil avec date, priorités du jour, rappel tarifaire (aller ${TARIF_A}€/km · retour ${TARIF_R}€/km), conseil business, motivation. 120 mots max. Français. Emojis.`);
+    render();
+    state.ai.rdv = await callClaude(`Connecte-toi à Google Calendar de ${CP.email}. Récupère tous les événements d'aujourd'hui ${todayISO()}. Liste heure, titre, lieu. Si aucun, dis-le clairement. 150 mots max. Français.`, true);
+    render();
+    state.ai.emails = await callClaude(`Connecte-toi à Gmail de ${CP.email}. Récupère les emails non lus d'aujourd'hui ${todayISO()}. Identifie les demandes de devis, confirmations, urgences. Pour chaque : expéditeur, sujet, type, action recommandée. 200 mots max. Français.`, true);
+  } catch(e) {
+    state.ai.briefing = "⚠️ Erreur de connexion. Vérifiez votre connexion internet.";
+  }
+  state.loading.matin = false; render();
+}
+
+async function analyserEmails() {
+  state.loading.analyse = true; render();
+  state.ai.suggestion = await callClaude(`Emails Cathy Pets : "${state.ai.emails}". Pour chaque demande de transport, génère une réponse courte professionnelle. Tarifs : aller ${TARIF_A}€/km · retour ${TARIF_R}€/km. 180 mots max. Français.`).catch(()=>"⚠️ Erreur.");
+  state.loading.analyse = false; render();
+}
+
+function attachEvents() {
+  // Les events sont inline dans le HTML
+}
+
+// ═══════════════════════════════════════════════════════
+//  PWA — SERVICE WORKER
+// ═══════════════════════════════════════════════════════
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js").catch(()=>{});
+}
+
+// Démarrage
+render();
+</script>
+</body>
+</html>
